@@ -1,0 +1,65 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432/jobscraper
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: >
+      sh -c "cd backend && python manage.py migrate &&
+             python manage.py init_sources &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=jobscraper
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432/jobscraper
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: sh -c "cd backend && celery -A config worker --loglevel=info"
+
+  celery-beat:
+    build: .
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432/jobscraper
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: sh -c "cd backend && celery -A config beat --loglevel=info"
+
+volumes:
+  postgres_data:

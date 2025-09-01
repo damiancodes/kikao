@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Jobs - Job Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-list me-2"></i>Job Listings
+        </h1>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filters
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="filterForm">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       placeholder="Search jobs...">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">All</option>
+                                    <option value="active">Active</option>
+                                    <option value="expired">Expired</option>
+                                    <option value="filled">Filled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="source" class="form-label">Source</label>
+                                <select class="form-select" id="source" name="source">
+                                    <option value="">All</option>
+                                    <option value="1">LinkedIn</option>
+                                    <option value="2">Indeed</option>
+                                    <option value="3">Glassdoor</option>
+                                    <option value="4">RemoteOK</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="employment_type" class="form-label">Type</label>
+                                <select class="form-select" id="employment_type" name="employment_type">
+                                    <option value="">All</option>
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Internship">Internship</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="remote" class="form-label">Remote</label>
+                                <select class="form-select" id="remote" name="remote_allowed">
+                                    <option value="">All</option>
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-briefcase me-2"></i>Jobs
+                </h5>
+                <div>
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="exportJobs()">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshJobs()">
+                        <i class="fas fa-refresh me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="jobList">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Job pagination">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination will be loaded here -->
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+
+$(document).ready(function() {
+    // Load initial jobs
+    loadJobs();
+    
+    // Handle filter form submission
+    $('#filterForm').on('submit', function(e) {
+        e.preventDefault();
+        currentPage = 1;
+        currentFilters = getFormData($(this));
+        loadJobs();
+    });
+    
+    // Handle pagination
+    $(document).on('click', '.pagination a', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        if (page) {
+            currentPage = page;
+            loadJobs();
+        }
+    });
+});
+
+function getFormData(form) {
+    const formData = {};
+    form.serializeArray().forEach(function(item) {
+        if (item.value) {
+            formData[item.name] = item.value;
+        }
+    });
+    return formData;
+}
+
+function loadJobs() {
+    const params = new URLSearchParams({
+        page: currentPage,
+        ...currentFilters
+    });
+    
+    $.ajax({
+        url: `/api/jobs/?${params}`,
+        method: 'GET',
+        success: function(data) {
+            displayJobs(data.results);
+            displayPagination(data);
+        },
+        error: function(xhr, status, error) {
+            $('#jobList').html('<div class="alert alert-danger">Error loading jobs: ' + error + '</div>');
+        }
+    });
+}
+
+function displayJobs(jobs) {
+    if (jobs.length === 0) {
+        $('#jobList').html('<div class="alert alert-info">No jobs found.</div>');
+        return;
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-striped table-hover">';
+    html += '<thead><tr>';
+    html += '<th>Title</th><th>Company</th><th>Location</th><th>Source</th><th>Type</th><th>Salary</th><th>Status</th><th>Posted</th>';
+    html += '</tr></thead><tbody>';
+    
+    jobs.forEach(job => {
+        const statusClass = getStatusClass(job.status);
+        const salary = job.salary_range || 'Not specified';
+        const postedDate = job.posted_date ? new Date(job.posted_date).toLocaleDateString() : 'Unknown';
+        const remoteBadge = job.remote_allowed ? '<span class="badge bg-success">Remote</span>' : '';
+        
+        html += `<tr>
+            <td>
+                <strong>${job.title}</strong>
+                ${remoteBadge}
+            </td>
+            <td>${job.company.name}</td>
+            <td>${job.location || 'Not specified'}</td>
+            <td><span class="badge bg-info">${job.source.name}</span></td>
+            <td>${job.employment_type || 'Not specified'}</td>
+            <td>${salary}</td>
+            <td><span class="badge ${statusClass}">${job.status}</span></td>
+            <td>${postedDate}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    $('#jobList').html(html);
+}
+
+function displayPagination(data) {
+    if (!data.previous && !data.next) {
+        $('#pagination').empty();
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    if (data.previous) {
+        html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a></li>`;
+    } else {
+        html += '<li class="page-item disabled"><span class="page-link">Previous</span></li>';
+    }
+    
+    // Page numbers
+    const totalPages = Math.ceil(data.count / 20);
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const activeClass = i === currentPage ? 'active' : '';
+        html += `<li class="page-item ${activeClass}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+    }
+    
+    // Next button
+    if (data.next) {
+        html += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">Next</a></li>`;
+    } else {
+        html += '<li class="page-item disabled"><span class="page-link">Next</span></li>';
+    }
+    
+    $('#pagination').html(html);
+}
+
+function getStatusClass(status) {
+    switch(status) {
+        case 'active': return 'bg-success';
+        case 'expired': return 'bg-warning';
+        case 'filled': return 'bg-danger';
+        default: return 'bg-secondary';
+    }
+}
+
+function exportJobs() {
+    const params = new URLSearchParams(currentFilters);
+    window.open(`/api/jobs/export/?${params}`, '_blank');
+}
+
+function refreshJobs() {
+    loadJobs();
+}
+</script>
+{% endblock %}

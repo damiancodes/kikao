@@ -1,0 +1,4 @@
+-r base.txt
+
+# Production specific packages
+sentry-sdk==1.38.0

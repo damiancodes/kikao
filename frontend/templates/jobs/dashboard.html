@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Job Scraper{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_jobs }}</h4>
+                        <p class="card-text">Total Jobs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ active_jobs }}</h4>
+                        <p class="card-text">Active Jobs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ companies_count }}</h4>
+                        <p class="card-text">Companies</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ sources_count }}</h4>
+                        <p class="card-text">Active Sources</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-globe fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Search Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-search me-2"></i>Search Jobs
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="jobSearchForm">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="query" class="form-label">Job Title/Keywords</label>
+                                <input type="text" class="form-control" id="query" name="query" 
+                                       placeholder="e.g., Python Developer" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="e.g., New York, NY">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="maxResults" class="form-label">Max Results</label>
+                                <select class="form-select" id="maxResults" name="maxResults">
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scraping Sessions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Scraping Sessions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="scrapingSessions">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Search Results -->
+<div class="row mt-4" id="searchResults" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Search Results
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="jobResults">
+                    <!-- Results will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Load recent scraping sessions
+    loadScrapingSessions();
+    
+    // Handle job search form submission
+    $('#jobSearchForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            query: $('#query').val(),
+            location: $('#location').val(),
+            max_results: $('#maxResults').val()
+        };
+        
+        searchJobs(formData);
+    });
+});
+
+function loadScrapingSessions() {
+    $.ajax({
+        url: '/api/sessions/',
+        method: 'GET',
+        success: function(data) {
+            displayScrapingSessions(data.results.slice(0, 5));
+        },
+        error: function(xhr, status, error) {
+            $('#scrapingSessions').html('<div class="alert alert-warning">No recent sessions found.</div>');
+        }
+    });
+}
+
+function displayScrapingSessions(sessions) {
+    if (sessions.length === 0) {
+        $('#scrapingSessions').html('<div class="alert alert-info">No scraping sessions found.</div>');
+        return;
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-striped">';
+    html += '<thead><tr><th>Query</th><th>Status</th><th>Jobs Found</th><th>Created</th><th>Duration</th></tr></thead>';
+    html += '<tbody>';
+    
+    sessions.forEach(session => {
+        const statusClass = getStatusClass(session.status);
+        const duration = session.duration || 'N/A';
+        
+        html += `<tr>
+            <td>${session.query} ${session.location ? `(${session.location})` : ''}</td>
+            <td><span class="badge ${statusClass}">${session.status}</span></td>
+            <td>${session.jobs_found}</td>
+            <td>${new Date(session.created_at).toLocaleDateString()}</td>
+            <td>${duration}</td>
+        </tr>`;
+    });
+    
+    html += '</tbody></table></div>';
+    $('#scrapingSessions').html(html);
+}
+
+function getStatusClass(status) {
+    switch(status) {
+        case 'completed': return 'bg-success';
+        case 'running': return 'bg-primary';
+        case 'failed': return 'bg-danger';
+        case 'pending': return 'bg-warning';
+        default: return 'bg-secondary';
+    }
+}
+
+function searchJobs(formData) {
+    // Show loading state
+    $('#searchResults').show();
+    $('#jobResults').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Searching...</span></div></div>');
+    
+    // Create job search
+    $.ajax({
+        url: '/api/searches/',
+        method: 'POST',
+        data: JSON.stringify(formData),
+        contentType: 'application/json',
+        success: function(data) {
+            // Execute the search
+            executeJobSearch(data.id);
+        },
+        error: function(xhr, status, error) {
+            $('#jobResults').html('<div class="alert alert-danger">Error creating job search: ' + error + '</div>');
+        }
+    });
+}
+
+function executeJobSearch(searchId) {
+    $.ajax({
+        url: `/api/searches/${searchId}/execute/`,
+        method: 'POST',
+        success: function(data) {
+            $('#jobResults').html(`
+                <div class="alert alert-success">
+                    <h6>Search Initiated</h6>
+                    <p>Your job search has been started. Task ID: ${data.task_id}</p>
+                    <p>This may take a few minutes to complete. You can check the results in the Jobs section.</p>
+                </div>
+            `);
+        },
+        error: function(xhr, status, error) {
+            $('#jobResults').html('<div class="alert alert-danger">Error executing job search: ' + error + '</div>');
+        }
+    });
+}
+</script>
+{% endblock %}
