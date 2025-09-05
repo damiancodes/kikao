@@ -4,7 +4,6 @@
 
 echo "Setting up Job Scraper Dashboard..."
 
-# Create virtual environment
 echo "Creating virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
@@ -75,3 +74,6 @@ echo "4. Start Celery beat: celery -A config beat --loglevel=info"
 echo ""
 echo "To start with Docker:"
 echo "docker-compose up --build"
+
+
+

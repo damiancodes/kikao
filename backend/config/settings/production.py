@@ -53,3 +53,4 @@ if env('SENTRY_DSN', default=None):
         traces_sample_rate=0.1,
         send_default_pii=True
     )
+

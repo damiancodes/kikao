@@ -116,3 +116,4 @@ class JobSearchResult(models.Model):
     
     def __str__(self):
         return f"{self.search} -> {self.job}"
+

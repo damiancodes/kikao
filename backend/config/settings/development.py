@@ -8,12 +8,18 @@ from .base import *
 DEBUG = True
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use PostgreSQL if DATABASE_URL is set (Docker environment), otherwise SQLite for local development
+if env('DATABASE_URL', default=None):
+    DATABASES = {
+        'default': env.db()
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Add development-specific apps
 INSTALLED_APPS += [

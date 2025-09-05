@@ -109,3 +109,6 @@ class ScrapingLog(models.Model):
     
     def __str__(self):
         return f"{self.session} - {self.level}: {self.message[:50]}"
+
+
+

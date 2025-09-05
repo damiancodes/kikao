@@ -142,3 +142,6 @@ class RemoteOKScraper(BaseScraper):
             return 'Intern'
         
         return ''  # Unknown
+
+
+

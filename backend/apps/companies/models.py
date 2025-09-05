@@ -89,3 +89,6 @@ class CompanyContact(models.Model):
     
     def __str__(self):
         return f"{self.company.name} - {self.contact_type}: {self.value}"
+
+
+

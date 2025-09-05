@@ -84,3 +84,6 @@ class ScrapingLogViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['session', 'level', 'source']
+
+
+

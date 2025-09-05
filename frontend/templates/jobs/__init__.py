@@ -1,1 +1,0 @@
-# Jobs templates package

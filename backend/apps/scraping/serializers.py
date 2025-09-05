@@ -48,3 +48,6 @@ class ScrapingSessionSerializer(serializers.ModelSerializer):
             'id', 'jobs_found', 'jobs_processed', 'jobs_created', 'jobs_updated',
             'errors_count', 'started_at', 'completed_at', 'created_at', 'updated_at'
         ]
+
+
+
