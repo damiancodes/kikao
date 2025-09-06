@@ -9,7 +9,7 @@ from django.utils import timezone
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Job, JobSource, JobSearch, JobSearchResult
 from .serializers import (
@@ -77,6 +77,47 @@ class JobViewSet(viewsets.ModelViewSet):
             'remote_jobs': self.queryset.filter(remote_allowed=True).count(),
         }
         return Response(stats)
+    
+    @action(detail=False, methods=['get'])
+    def export(self, request):
+        """Export jobs to CSV."""
+        from django.http import HttpResponse
+        import csv
+        import io
+        
+        # Get filtered jobs
+        jobs = self.filter_queryset(self.get_queryset())
+        
+        # Create CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="jobs_export.csv"'
+        
+        writer = csv.writer(response)
+        
+        # Write headers
+        writer.writerow([
+            'Title', 'Company', 'Location', 'Source', 'Type', 'Status', 
+            'Salary Min', 'Salary Max', 'Currency', 'Remote', 'Posted Date', 'URL'
+        ])
+        
+        # Write job data
+        for job in jobs:
+            writer.writerow([
+                job.title,
+                job.company.name if job.company else 'N/A',
+                job.location,
+                job.source.name if job.source else 'N/A',
+                job.employment_type,
+                job.status,
+                job.salary_min or '',
+                job.salary_max or '',
+                job.salary_currency,
+                'Yes' if job.remote_allowed else 'No',
+                job.posted_date.strftime('%Y-%m-%d') if job.posted_date else '',
+                job.source_url
+            ])
+        
+        return response
 
 
 class JobSearchViewSet(viewsets.ModelViewSet):
@@ -84,7 +125,7 @@ class JobSearchViewSet(viewsets.ModelViewSet):
     
     queryset = JobSearch.objects.prefetch_related('sources').all()
     serializer_class = JobSearchSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['query', 'location']
     ordering_fields = ['query', 'created_at']
@@ -95,19 +136,25 @@ class JobSearchViewSet(viewsets.ModelViewSet):
         """Execute a job search by triggering scraping."""
         job_search = self.get_object()
         
-        # Trigger scraping task
-        task = scrape_jobs_task.delay(
-            query=job_search.query,
-            location=job_search.location,
-            max_results=job_search.max_results,
-            source_ids=list(job_search.sources.values_list('id', flat=True))
-        )
-        
-        return Response({
-            'message': 'Job search initiated',
-            'task_id': task.id,
-            'search_id': job_search.id
-        })
+        try:
+            # Run scraping synchronously for now (without Celery)
+            result = scrape_jobs_task(
+                query=job_search.query,
+                location=job_search.location,
+                max_results=job_search.max_results,
+                source_ids=list(job_search.sources.values_list('id', flat=True))
+            )
+            
+            return Response({
+                'message': 'Job search completed successfully',
+                'search_id': job_search.id,
+                'jobs_found': result.get('jobs_found', 0),
+                'jobs_created': result.get('jobs_created', 0)
+            })
+        except Exception as e:
+            return Response({
+                'error': f'Job search failed: {str(e)}'
+            }, status=500)
     
     @action(detail=True, methods=['get'])
     def results(self, request, pk=None):

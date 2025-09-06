@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<form method="get" class="form-inline">
+    {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}" class="sr-only">{{ field.label }}</label>
+            {{ field }}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">{% trans "Filter" %}</button>
+    <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="btn btn-secondary">{% trans "Clear" %}</a>
+</form>

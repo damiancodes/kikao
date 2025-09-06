@@ -6,6 +6,7 @@ services:
     volumes:
       - ./backend:/app/backend
       - ./frontend:/app/frontend
+      - ./frontend/static:/app/staticfiles  # Mount static files directly
     environment:
       - DEBUG=1
       - DATABASE_URL=postgresql://postgres:password@db:5432/jobscraper

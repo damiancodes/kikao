@@ -14,8 +14,10 @@ router.register(r'logs', views.ScrapingLogViewSet)
 
 # URL patterns
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
+
+
 
 
 

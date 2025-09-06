@@ -12,3 +12,5 @@ class ScrapingConfig(AppConfig):
 
 
 
+
+

@@ -4,13 +4,7 @@
 {% block title %}Dashboard - Job Scraper{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-        </h1>
-    </div>
-</div>
+<div class="container mt-4">
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
@@ -21,9 +15,6 @@
                     <div>
                         <h4 class="card-title">{{ total_jobs }}</h4>
                         <p class="card-text">Total Jobs</p>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-briefcase fa-2x"></i>
                     </div>
                 </div>
             </div>
@@ -38,9 +29,6 @@
                         <h4 class="card-title">{{ active_jobs }}</h4>
                         <p class="card-text">Active Jobs</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-check-circle fa-2x"></i>
-                    </div>
                 </div>
             </div>
         </div>
@@ -53,9 +41,6 @@
                     <div>
                         <h4 class="card-title">{{ companies_count }}</h4>
                         <p class="card-text">Companies</p>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-building fa-2x"></i>
                     </div>
                 </div>
             </div>
@@ -70,26 +55,24 @@
                         <h4 class="card-title">{{ sources_count }}</h4>
                         <p class="card-text">Active Sources</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-globe fa-2x"></i>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Job Search Form -->
+<!-- Kenya Airways Job Search Form -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-search me-2"></i>Search Jobs
-                </h5>
-            </div>
+        <div class="kenya-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            Search Jobs
+                        </h5>
+                    </div>
             <div class="card-body">
                 <form id="jobSearchForm">
+                    {% csrf_token %}
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
@@ -131,19 +114,19 @@
     </div>
 </div>
 
-<!-- Recent Scraping Sessions -->
+<!-- Kenya Airways Recent Scraping Sessions -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-history me-2"></i>Recent Scraping Sessions
-                </h5>
-            </div>
+        <div class="kenya-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            Recent Scraping Sessions
+                        </h5>
+                    </div>
             <div class="card-body">
                 <div id="scrapingSessions">
                     <div class="text-center">
-                        <div class="spinner-border" role="status">
+                        <div class="kenya-spinner" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
@@ -253,6 +236,9 @@ function searchJobs(formData) {
         method: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+        },
         success: function(data) {
             // Execute the search
             executeJobSearch(data.id);
@@ -267,6 +253,9 @@ function executeJobSearch(searchId) {
     $.ajax({
         url: `/api/searches/${searchId}/execute/`,
         method: 'POST',
+        headers: {
+            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+        },
         success: function(data) {
             $('#jobResults').html(`
                 <div class="alert alert-success">
@@ -282,4 +271,6 @@ function executeJobSearch(searchId) {
     });
 }
 </script>
+
+</div> <!-- Close container -->
 {% endblock %}

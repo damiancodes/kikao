@@ -1,5 +1,5 @@
 """
-Indeed job scraper.
+Fuzu.com job scraper.
 """
 
 from .base import BaseScraper
@@ -14,53 +14,52 @@ from urllib.parse import urlencode, urljoin
 logger = logging.getLogger(__name__)
 
 
-class IndeedScraper(BaseScraper):
-    """Indeed job scraper."""
+class FuzuScraper(BaseScraper):
+    """Fuzu.com job scraper."""
     
-    BASE_URL = "https://www.indeed.com/jobs"
+    BASE_URL = "https://www.fuzu.com"
     
     def scrape_jobs(self, query, location='', max_results=50):
-        """Scrape jobs from Indeed."""
+        """Scrape jobs from Fuzu."""
         jobs = []
         
         try:
             if not self.setup_driver():
-                logger.error("Failed to setup driver for Indeed scraping")
+                logger.error("Failed to setup driver for Fuzu scraping")
                 return jobs
             
             # Build search URL
             params = {
                 'q': query,
-                'l': location,
-                'start': 0
+                'location': location,
             }
             
-            search_url = f"{self.BASE_URL}?{urlencode(params)}"
-            logger.info(f"Scraping Indeed: {search_url}")
+            search_url = f"{self.BASE_URL}/job?{urlencode(params)}"
+            logger.info(f"Scraping Fuzu: {search_url}")
             
             self.driver.get(search_url)
             time.sleep(3)
             
-            # Wait for job listings to load - try multiple selectors
+            # Wait for job listings to load
             try:
-                self.wait_for_element(By.CLASS_NAME, "jobsearch-ResultsList", timeout=5)
+                self.wait_for_element(By.CSS_SELECTOR, ".job-card", timeout=10)
             except TimeoutException:
                 try:
-                    self.wait_for_element(By.CSS_SELECTOR, "[data-testid='job-list']", timeout=5)
+                    self.wait_for_element(By.CSS_SELECTOR, "[data-testid='job-card']", timeout=10)
                 except TimeoutException:
-                    self.wait_for_element(By.CSS_SELECTOR, ".jobsearch-ResultsList", timeout=5)
+                    self.wait_for_element(By.CSS_SELECTOR, ".job-listing", timeout=10)
             
             # Scroll to load more jobs
             self._scroll_to_load_jobs(max_results)
             
-            # Get job elements - try multiple selectors
+            # Get job elements
             job_elements = []
             selectors = [
-                ".jobsearch-ResultsList .job_seen_beacon",
-                "[data-testid='job-list'] .job_seen_beacon", 
-                ".jobsearch-ResultsList .job_seen_beacon",
-                ".jobsearch-ResultsList [data-testid='job']",
-                ".jobsearch-ResultsList .job"
+                ".job-card",
+                "[data-testid='job-card']",
+                ".job-listing",
+                ".job-item",
+                ".job-post"
             ]
             
             for selector in selectors:
@@ -79,10 +78,10 @@ class IndeedScraper(BaseScraper):
                     logger.error(f"Error extracting job {i+1}: {str(e)}")
                     continue
             
-            logger.info(f"Successfully scraped {len(jobs)} jobs from Indeed")
+            logger.info(f"Successfully scraped {len(jobs)} jobs from Fuzu")
             
         except Exception as e:
-            logger.error(f"Error scraping Indeed: {str(e)}")
+            logger.error(f"Error scraping Fuzu: {str(e)}")
         finally:
             self.close_driver()
         
@@ -91,30 +90,10 @@ class IndeedScraper(BaseScraper):
     def _scroll_to_load_jobs(self, max_results):
         """Scroll to load more job listings."""
         try:
-            # Find the jobs container - try multiple selectors
-            jobs_container = None
-            container_selectors = [
-                (By.CLASS_NAME, "jobsearch-ResultsList"),
-                (By.CSS_SELECTOR, "[data-testid='job-list']"),
-                (By.CSS_SELECTOR, ".jobsearch-ResultsList")
-            ]
-            
-            for by, selector in container_selectors:
-                try:
-                    jobs_container = self.wait_for_element(by, selector, timeout=5)
-                    if jobs_container:
-                        break
-                except TimeoutException:
-                    continue
-                    
-            if not jobs_container:
-                logger.warning("Could not find jobs container for scrolling")
-                return
-            
             # Scroll down to load more jobs
             last_height = self.driver.execute_script("return document.body.scrollHeight")
             scroll_attempts = 0
-            max_scroll_attempts = 10
+            max_scroll_attempts = 5
             
             while scroll_attempts < max_scroll_attempts:
                 # Scroll down
@@ -129,21 +108,8 @@ class IndeedScraper(BaseScraper):
                 last_height = new_height
                 scroll_attempts += 1
                 
-                # Check if we have enough jobs - try multiple selectors
-                job_elements = []
-                selectors = [
-                    ".jobsearch-ResultsList .job_seen_beacon",
-                    "[data-testid='job-list'] .job_seen_beacon", 
-                    ".jobsearch-ResultsList .job_seen_beacon",
-                    ".jobsearch-ResultsList [data-testid='job']",
-                    ".jobsearch-ResultsList .job"
-                ]
-                
-                for selector in selectors:
-                    job_elements = self.safe_find_elements(By.CSS_SELECTOR, selector)
-                    if job_elements:
-                        break
-                        
+                # Check if we have enough jobs
+                job_elements = self.safe_find_elements(By.CSS_SELECTOR, ".job-card")
                 if len(job_elements) >= max_results:
                     break
             
@@ -155,7 +121,7 @@ class IndeedScraper(BaseScraper):
         try:
             # Extract basic info - try multiple selectors
             title = None
-            title_selectors = [".jobTitle a", "[data-testid='job-title']", ".jobTitle", "h2 a", "h3 a"]
+            title_selectors = [".job-title", ".job-card-title", "h3", "h4", ".title", ".job-name"]
             for selector in title_selectors:
                 try:
                     title_element = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -166,7 +132,7 @@ class IndeedScraper(BaseScraper):
                     continue
             
             company_name = None
-            company_selectors = [".companyName", "[data-testid='company-name']", ".companyName a", ".company"]
+            company_selectors = [".company-name", ".job-company", ".company", ".employer", ".job-employer"]
             for selector in company_selectors:
                 try:
                     company_element = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -177,7 +143,7 @@ class IndeedScraper(BaseScraper):
                     continue
             
             location = None
-            location_selectors = [".companyLocation", "[data-testid='job-location']", ".location", ".companyLocation a"]
+            location_selectors = [".job-location", ".location", ".job-address", ".address", ".job-place"]
             for selector in location_selectors:
                 try:
                     location_element = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -187,9 +153,9 @@ class IndeedScraper(BaseScraper):
                 except NoSuchElementException:
                     continue
             
-            # Extract job URL - try multiple selectors
+            # Extract job URL
             job_url = None
-            url_selectors = [".jobTitle a", "[data-testid='job-title']", "h2 a", "h3 a", "a[data-jk]"]
+            url_selectors = ["a", ".job-link", ".apply-link", ".job-url"]
             for selector in url_selectors:
                 try:
                     job_link = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -202,9 +168,9 @@ class IndeedScraper(BaseScraper):
             if job_url and not job_url.startswith('http'):
                 job_url = urljoin(self.BASE_URL, job_url)
             
-            # Extract salary if available - try multiple selectors
+            # Extract salary if available
             salary_text = None
-            salary_selectors = [".salary-snippet", "[data-testid='salary']", ".salary", ".job-snippet .salary"]
+            salary_selectors = [".salary", ".job-salary", ".compensation", ".pay", ".job-pay"]
             for selector in salary_selectors:
                 try:
                     salary_element = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -215,9 +181,9 @@ class IndeedScraper(BaseScraper):
                     continue
             salary_min, salary_max, currency = self.extract_salary(salary_text)
             
-            # Extract job description (simplified) - try multiple selectors
+            # Extract job description
             description = None
-            description_selectors = [".job-snippet", "[data-testid='job-snippet']", ".summary", ".jobDescription"]
+            description_selectors = [".job-description", ".description", ".summary", ".job-summary", ".job-desc"]
             for selector in description_selectors:
                 try:
                     description_element = job_element.find_element(By.CSS_SELECTOR, selector)
@@ -251,7 +217,7 @@ class IndeedScraper(BaseScraper):
                 'employment_type': employment_type,
                 'experience_level': experience_level,
                 'remote_allowed': remote_allowed,
-                'posted_date': None,  # Indeed doesn't always show this
+                'posted_date': None,
             }
             
         except Exception as e:
@@ -261,7 +227,7 @@ class IndeedScraper(BaseScraper):
     def _extract_employment_type(self, description):
         """Extract employment type from description."""
         if not description:
-            return ''
+            return 'Full-time'
         
         description_lower = description.lower()
         
@@ -276,7 +242,7 @@ class IndeedScraper(BaseScraper):
         elif 'freelance' in description_lower:
             return 'Freelance'
         
-        return 'Full-time'  # Default assumption
+        return 'Full-time'  # Default
     
     def _extract_experience_level(self, description):
         """Extract experience level from description."""
@@ -306,6 +272,3 @@ class IndeedScraper(BaseScraper):
         ]
         
         return any(keyword in text for keyword in remote_keywords)
-
-
-

@@ -35,15 +35,31 @@ class BaseScraper(ABC):
         if headless or getattr(settings, 'SELENIUM_HEADLESS', True):
             chrome_options.add_argument('--headless')
         
+        # Anti-detection options
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1920,1080')
-        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        
+        # Random user agent
+        user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ]
+        import random
+        chrome_options.add_argument(f'--user-agent={random.choice(user_agents)}')
         
         try:
             self.driver = webdriver.Chrome(options=chrome_options)
             self.driver.implicitly_wait(getattr(settings, 'SELENIUM_TIMEOUT', 10))
+            
+            # Execute stealth script
+            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            
             return True
         except Exception as e:
             logger.error(f"Failed to setup Chrome driver: {str(e)}")
@@ -180,6 +196,8 @@ class BaseScraper(ABC):
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.close_driver()
+
+
 
 
 

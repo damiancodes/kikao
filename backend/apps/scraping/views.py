@@ -7,11 +7,31 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 from .models import ScrapingSession, ScrapingError, ScrapingLog
 from .serializers import (
     ScrapingSessionSerializer, ScrapingErrorSerializer, ScrapingLogSerializer
 )
 from .tasks import scrape_jobs_task, cleanup_old_sessions, update_job_statuses
+
+
+class ScrapingSessionFilter(filters.FilterSet):
+    """Filter for ScrapingSession model."""
+    
+    status = filters.ChoiceFilter(choices=[
+        ('pending', 'Pending'),
+        ('running', 'Running'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ])
+    query = filters.CharFilter(lookup_expr='icontains')
+    location = filters.CharFilter(lookup_expr='icontains')
+    created_at = filters.DateFromToRangeFilter()
+    
+    class Meta:
+        model = ScrapingSession
+        fields = ['status', 'query', 'location', 'created_at']
 
 
 class ScrapingSessionViewSet(viewsets.ModelViewSet):
@@ -21,7 +41,7 @@ class ScrapingSessionViewSet(viewsets.ModelViewSet):
     serializer_class = ScrapingSessionSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status', 'query', 'location']
+    filterset_class = ScrapingSessionFilter
     
     @action(detail=True, methods=['post'])
     def retry(self, request, pk=None):
@@ -66,6 +86,40 @@ class ScrapingSessionViewSet(viewsets.ModelViewSet):
         })
 
 
+class ScrapingErrorFilter(filters.FilterSet):
+    """Filter for ScrapingError model."""
+    
+    error_type = filters.ChoiceFilter(choices=[
+        ('network', 'Network Error'),
+        ('parsing', 'Parsing Error'),
+        ('timeout', 'Timeout Error'),
+        ('authentication', 'Authentication Error'),
+        ('other', 'Other Error'),
+    ])
+    source = filters.CharFilter(lookup_expr='icontains')
+    
+    class Meta:
+        model = ScrapingError
+        fields = ['session', 'error_type', 'source']
+
+
+class ScrapingLogFilter(filters.FilterSet):
+    """Filter for ScrapingLog model."""
+    
+    level = filters.ChoiceFilter(choices=[
+        ('DEBUG', 'Debug'),
+        ('INFO', 'Info'),
+        ('WARNING', 'Warning'),
+        ('ERROR', 'Error'),
+        ('CRITICAL', 'Critical'),
+    ])
+    source = filters.CharFilter(lookup_expr='icontains')
+    
+    class Meta:
+        model = ScrapingLog
+        fields = ['session', 'level', 'source']
+
+
 class ScrapingErrorViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for ScrapingError model."""
     
@@ -73,7 +127,7 @@ class ScrapingErrorViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ScrapingErrorSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['session', 'error_type', 'source']
+    filterset_class = ScrapingErrorFilter
 
 
 class ScrapingLogViewSet(viewsets.ReadOnlyModelViewSet):
@@ -83,7 +137,9 @@ class ScrapingLogViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ScrapingLogSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['session', 'level', 'source']
+    filterset_class = ScrapingLogFilter
+
+
 
 
 

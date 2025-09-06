@@ -11,7 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Environment variables
 env = environ.Env(
-    DEBUG=(bool, False)
+    DEBUG=(bool, False),
+    ADZUNA_APP_ID=(str, ''),
+    ADZUNA_APP_KEY=(str, ''),
 )
 
 # Read .env file
@@ -38,6 +40,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
+    'django_filters',
 ]
 
 LOCAL_APPS = [
@@ -126,6 +129,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
@@ -191,3 +195,7 @@ LOGGING = {
         },
     },
 }
+
+# Adzuna API Configuration
+ADZUNA_APP_ID = env('ADZUNA_APP_ID', default='d8b4f415')
+ADZUNA_APP_KEY = env('ADZUNA_APP_KEY', default='95bee9c578111e004cff4c49be9364f0')

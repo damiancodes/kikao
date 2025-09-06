@@ -15,10 +15,10 @@ router.register(r'search-results', views.JobSearchResultViewSet)
 
 
 urlpatterns = [
-    # API endpoints
-    path('api/', include(router.urls)),
-    
     # Dashboard views
     path('', views.dashboard_view, name='dashboard'),
     path('jobs/', views.job_list_view, name='job_list'),
+    
+    # API endpoints
+    path('api/', include(router.urls)),
 ]

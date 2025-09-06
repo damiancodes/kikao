@@ -11,7 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     {% load static %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'css/main.css' %}?v=7" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -20,7 +20,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <i class="fas fa-briefcase me-2"></i>Job Scraper
+                Job Scraper
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -31,17 +31,17 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'job_list' %}">
-                            <i class="fas fa-list me-1"></i>Jobs
+                            Jobs
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/admin/">
-                            <i class="fas fa-cog me-1"></i>Admin
+                            Admin
                         </a>
                     </li>
                 </ul>
@@ -49,7 +49,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link" href="/api/">
-                            <i class="fas fa-code me-1"></i>API
+                            API
                         </a>
                     </li>
                 </ul>
@@ -87,5 +87,21 @@
     <script src="{% static 'js/main.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
+    
+    <!-- Kenya Airways Footer -->
+    <footer class="kenya-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-briefcase me-2"></i>Job Scraper</h5>
+                    <p>Connecting talented professionals with amazing opportunities across Kenya and beyond.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5><i class="fas fa-globe-africa me-2"></i>Powered by Kenya</h5>
+                    <p>&copy; 2024 Job Scraper Dashboard. Built with Django & Selenium.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

@@ -13,5 +13,5 @@ router.register(r'company-contacts', views.CompanyContactViewSet)
 
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
