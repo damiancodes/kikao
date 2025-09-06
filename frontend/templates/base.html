@@ -11,7 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     {% load static %}
-    <link href="{% static 'css/main.css' %}?v=7" rel="stylesheet">
+    <link href="{% static 'css/main.css' %}?v=10" rel="stylesheet">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -71,13 +71,6 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-3 mt-5">
-        <div class="container">
-            <p>&copy; 2024 Job Scraper Dashboard. Built with Django & Selenium.</p>
-        </div>
-    </footer>
-    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
@@ -88,17 +81,22 @@
     
     {% block extra_js %}{% endblock %}
     
-    <!-- Kenya Airways Footer -->
+    <!-- Clean Footer -->
     <footer class="kenya-footer">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-briefcase me-2"></i>Job Scraper</h5>
+                    <h5>Job Scraper</h5>
                     <p>Connecting talented professionals with amazing opportunities across Kenya and beyond.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <h5><i class="fas fa-globe-africa me-2"></i>Powered by Kenya</h5>
+                    <h5>Powered by Kenya</h5>
                     <p>&copy; 2024 Job Scraper Dashboard. Built with Django & Selenium.</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <small class="tech-stack-tag">Selenium + Django + API</small>
                 </div>
             </div>
         </div>
