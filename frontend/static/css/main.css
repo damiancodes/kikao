@@ -303,6 +303,22 @@ body {
     letter-spacing: 0.5px !important;
     padding: 0.75rem 1rem !important;
     font-size: 0.85rem !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+}
+
+/* Center-align specific headers to match their content */
+.table thead th:nth-child(2), /* STATUS header */
+.table thead th:nth-child(3), /* JOBS FOUND header */
+.table thead th:nth-child(4), /* CREATED header */
+.table thead th:nth-child(5) { /* DURATION header */
+    text-align: center !important;
+}
+
+/* Job listings table header alignments */
+.table thead th:nth-child(6), /* TYPE header */
+.table thead th:nth-child(7), /* SALARY header */
+.table thead th:nth-child(8) { /* POSTED header */
     text-align: center !important;
 }
 
@@ -317,8 +333,32 @@ body {
 }
 
 .table tbody td {
-    padding: 0.75rem 1rem;
-    vertical-align: middle;
+    padding: 0.75rem 1rem !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+}
+
+/* Specific column alignments */
+.table tbody td:nth-child(2), /* STATUS column */
+.table tbody td:nth-child(4), /* CREATED column */
+.table tbody td:nth-child(5) { /* DURATION column */
+    text-align: center !important;
+}
+
+.table tbody td:nth-child(3) { /* JOBS FOUND column */
+    text-align: center !important;
+    font-weight: 600 !important;
+}
+
+/* Job listings table specific alignments */
+.table tbody td:nth-child(6), /* TYPE column */
+.table tbody td:nth-child(7), /* SALARY column */
+.table tbody td:nth-child(8) { /* POSTED column */
+    text-align: center !important;
+}
+
+.table tbody td:nth-child(5) { /* STATUS column in job listings */
+    text-align: center !important;
 }
 
 /* Clean Red & White Badges */
@@ -347,31 +387,50 @@ body {
     color: var(--kenya-white);
 }
 
-/* Alerts */
+.badge.bg-info {
+    background-color: var(--kenya-gray) !important;
+    color: var(--kenya-white);
+}
+
+.badge.bg-secondary {
+    background-color: var(--kenya-gray) !important;
+    color: var(--kenya-white);
+}
+
+/* Alerts - Kenya Airways Theme */
 .alert {
     border: none;
     border-radius: 0.5rem;
     border-left: 4px solid;
+    font-weight: 500;
 }
 
 .alert-success {
-    border-left-color: var(--success-color);
-    background-color: rgba(40, 167, 69, 0.1);
+    border-left-color: var(--kenya-red);
+    background-color: var(--kenya-white);
+    color: var(--kenya-red);
+    border: 2px solid var(--kenya-red);
 }
 
 .alert-danger {
-    border-left-color: var(--danger-color);
-    background-color: rgba(220, 53, 69, 0.1);
+    border-left-color: var(--kenya-red);
+    background-color: var(--kenya-white);
+    color: var(--kenya-red);
+    border: 2px solid var(--kenya-red);
 }
 
 .alert-warning {
-    border-left-color: var(--warning-color);
-    background-color: rgba(255, 193, 7, 0.1);
+    border-left-color: var(--kenya-red);
+    background-color: var(--kenya-white);
+    color: var(--kenya-red);
+    border: 2px solid var(--kenya-red);
 }
 
 .alert-info {
-    border-left-color: var(--info-color);
-    background-color: rgba(23, 162, 184, 0.1);
+    border-left-color: var(--kenya-red);
+    background-color: var(--kenya-white);
+    color: var(--kenya-red);
+    border: 2px solid var(--kenya-red);
 }
 
 /* Pagination */
