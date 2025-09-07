@@ -1,5 +1,7 @@
 # Job Scraper Dashboard
 
+![Job Scraper Dashboard](https://res.cloudinary.com/dzs0hdqhd/image/upload/v1757204010/scrapperrrs_llrycj.png)
+
 A comprehensive multi-platform job aggregator that scrapes job listings from various job sites including LinkedIn, Glassdoor, Indeed, RemoteOK, BrighterMonday, Fuzu, and Jobright. Built with Django, Selenium, and Docker for production deployment with a modern Kenya Airways-inspired red and white theme.
 
 ## Table of Contents
