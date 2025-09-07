@@ -166,7 +166,7 @@ job-scraper-dashboard/
 - Git
 - Modern web browser
 
-### Installation
+### Local Development
 
 1. **Clone the repository**
    ```bash
@@ -189,6 +189,17 @@ job-scraper-dashboard/
    - Dashboard: http://localhost:8000
    - API: http://localhost:8000/api/
    - Admin: http://localhost:8000/admin/
+
+### Cloud Deployment
+
+**Recommended Platforms:**
+- **Railway** (Best for this project) - [Deploy Guide](docs/DEPLOYMENT.md#railway-recommended)
+- **DigitalOcean App Platform** - [Deploy Guide](docs/DEPLOYMENT.md#digitalocean-app-platform)
+- **Heroku** - [Deploy Guide](docs/DEPLOYMENT.md#heroku)
+
+**Not Suitable:**
+- ❌ Vercel (No persistent database, 10s timeout limit)
+- ❌ Firebase (No Python runtime, no Selenium support)
 
 ### First-time Setup
 
