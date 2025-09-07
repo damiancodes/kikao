@@ -408,28 +408,28 @@ body {
 .alert-success {
     border-left-color: var(--kenya-red);
     background-color: var(--kenya-white);
-    color: var(--kenya-red);
+    color: var(--dark-color);
     border: 2px solid var(--kenya-red);
 }
 
 .alert-danger {
     border-left-color: var(--kenya-red);
     background-color: var(--kenya-white);
-    color: var(--kenya-red);
+    color: var(--dark-color);
     border: 2px solid var(--kenya-red);
 }
 
 .alert-warning {
     border-left-color: var(--kenya-red);
     background-color: var(--kenya-white);
-    color: var(--kenya-red);
+    color: var(--dark-color);
     border: 2px solid var(--kenya-red);
 }
 
 .alert-info {
     border-left-color: var(--kenya-red);
     background-color: var(--kenya-white);
-    color: var(--kenya-red);
+    color: var(--dark-color);
     border: 2px solid var(--kenya-red);
 }
 
